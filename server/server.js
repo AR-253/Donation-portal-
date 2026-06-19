@@ -63,7 +63,11 @@ app.use((err, req, res, next) => {
 });
 
 // Start listening
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`CORS is configured to accept origins from: ${clientOrigin}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log(`CORS is configured to accept origins from: ${clientOrigin}`);
+  });
+}
+
+module.exports = app;

@@ -24,15 +24,15 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
   fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png|webp|gif/;
+    const filetypes = /jpeg|jpg|png|webp|gif|mp4|webm|ogg|mov|mkv/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
+    const mimetype = filetypes.test(file.mimetype) || file.mimetype.startsWith('video/');
     if (mimetype && extname) {
       return cb(null, true);
     }
-    cb(new Error('Only images (jpeg, jpg, png, webp, gif) are allowed!'));
+    cb(new Error('Only images (jpeg, jpg, png, webp, gif) and videos (mp4, webm, ogg, mov, mkv) are allowed!'));
   }
 });
 
@@ -202,6 +202,47 @@ router.get('/donations', async (req, res) => {
   }
 });
 
+// DELETE /api/admin/donations/:id → delete invalid/fake donation
+router.delete('/donations/:id', async (req, res) => {
+  const { id } = req.params;
+  const conn = await db.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // 1. Check if donation exists
+    const [donations] = await conn.query('SELECT amount, campaign_id, user_id FROM donations WHERE id = ?', [id]);
+    if (donations.length === 0) {
+      await conn.rollback();
+      return res.status(404).json({ message: 'Donation not found' });
+    }
+
+    const { amount, campaign_id } = donations[0];
+    const parsedAmount = parseFloat(amount);
+
+    // 2. Subtract donation amount from campaign raised_amount
+    await conn.query(
+      'UPDATE campaigns SET raised_amount = GREATEST(0.00, raised_amount - ?) WHERE id = ?',
+      [parsedAmount, campaign_id]
+    );
+
+    // 3. Delete donation (this will also delete the receipt via CASCADE)
+    await conn.query('DELETE FROM donations WHERE id = ?', [id]);
+
+    await conn.commit();
+
+    // Log to audits
+    await logAudit(req, 'Donation Void', `Deleted fake/invalid donation ID ${id} of value $${parsedAmount} (Campaign ID: ${campaign_id})`);
+
+    return res.status(200).json({ message: 'Donation successfully deleted and campaign progress adjusted.' });
+  } catch (error) {
+    await conn.rollback();
+    console.error('Admin delete donation error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  } finally {
+    conn.release();
+  }
+});
+
 // 4. GET /api/admin/users → get all users list
 router.get('/users', async (req, res) => {
   try {
@@ -312,14 +353,21 @@ router.get('/audit-logs', async (req, res) => {
   }
 });
 
-// 7. POST /api/admin/upload → secure image upload endpoint
-router.post('/upload', upload.single('image'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: 'Please upload an image file' });
-  }
-  const port = process.env.PORT || 5000;
-  const imageUrl = `http://localhost:${port}/uploads/${req.file.filename}`;
-  return res.status(200).json({ imageUrl });
+// 7. POST /api/admin/upload → secure image and video upload endpoint
+router.post('/upload', (req, res) => {
+  const uploadSingle = upload.single('image');
+  uploadSingle(req, res, function (err) {
+    if (err) {
+      return res.status(400).json({ message: err.message });
+    }
+    if (!req.file) {
+      return res.status(400).json({ message: 'Please upload a file' });
+    }
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.get('host');
+    const fileUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
+    return res.status(200).json({ imageUrl: fileUrl, url: fileUrl });
+  });
 });
 
 module.exports = router;

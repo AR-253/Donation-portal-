@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS success_stories (
   title VARCHAR(255) NOT NULL,
   description TEXT NOT NULL,
   image_url VARCHAR(1000) DEFAULT '',
+  video_url VARCHAR(1000) DEFAULT '',
   likes_count INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

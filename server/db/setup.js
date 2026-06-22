@@ -1,7 +1,7 @@
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 async function runSetup() {
   const host = process.env.DB_HOST || 'localhost';
@@ -70,6 +70,21 @@ async function runSetup() {
           console.error('Details:', sqlErr.message);
         }
       }
+    }
+
+    // Dynamic Alter Check for video_url column in success_stories
+    try {
+      console.log('Verifying success_stories columns structure...');
+      const [columns] = await conn.query('SHOW COLUMNS FROM success_stories LIKE "video_url"');
+      if (columns.length === 0) {
+        console.log('Adding missing column "video_url" to "success_stories"...');
+        await conn.query('ALTER TABLE success_stories ADD COLUMN video_url VARCHAR(1000) DEFAULT "" AFTER image_url;');
+        console.log('Column "video_url" added successfully.');
+      } else {
+        console.log('Column "video_url" is already verified.');
+      }
+    } catch (alterErr) {
+      console.error('Failed to run schema alter check:', alterErr.message);
     }
 
     console.log('\n==================================================');

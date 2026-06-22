@@ -46,9 +46,9 @@ const AdminLayout = ({ children }) => {
         }`}>
           <Link to="/" className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
             {isCollapsed ? (
-              <span className="text-base font-black text-emerald-600 bg-emerald-50 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-emerald-100">GH</span>
+              <span className="text-base font-black text-emerald-600 bg-emerald-50 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-emerald-100">IB</span>
             ) : (
-              <span className="text-xl font-black text-emerald-600 tracking-tight transition-all duration-300">GiveHope Admin</span>
+              <span className="text-xl font-black text-emerald-600 tracking-tight transition-all duration-300">iBTIDAA Admin</span>
             )}
           </Link>
           {/* Toggle Button (Hidden on Mobile) */}
@@ -117,7 +117,7 @@ const AdminLayout = ({ children }) => {
       <main className="flex-grow overflow-x-hidden min-h-screen flex flex-col">
         {/* Mobile Header */}
         <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 shrink-0 md:hidden">
-          <span className="text-lg font-bold text-emerald-600">GiveHope Admin</span>
+          <span className="text-lg font-bold text-emerald-600">iBTIDAA Admin</span>
           <div className="flex gap-4">
             <Link to="/admin" className="text-sm font-bold text-gray-600">Dashboard</Link>
             <Link to="/admin/campaigns" className="text-sm font-bold text-gray-600">Campaigns</Link>

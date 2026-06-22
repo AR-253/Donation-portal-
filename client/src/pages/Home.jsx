@@ -134,7 +134,7 @@ const Home = () => {
             Help Someone Today
           </h1>
           <p className="text-lg sm:text-xl text-emerald-100 max-w-2xl mx-auto font-light leading-relaxed">
-            GiveHope connects you directly with causes, families, and organizations that need support. Your small contribution can create a massive wave of change.
+            iBTIDAA Welfare Foundation connects you directly with causes, families, and communities in Pakistan that need support. Your small contribution can create a massive wave of change.
           </p>
           <div className="pt-4 flex justify-center gap-4">
             <Link

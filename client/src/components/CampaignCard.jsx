@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import ProgressBar from './ProgressBar';
+import { formatMediaUrl } from '../utils/media';
 
 const CampaignCard = ({ campaign }) => {
   const { id, title, description, goal_amount, raised_amount, current_amount, image_url } = campaign;
@@ -9,7 +10,7 @@ const CampaignCard = ({ campaign }) => {
   return (
     <div className="flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition duration-300">
       <img
-        src={image_url || 'https://images.unsplash.com/photo-1541944743827-e04aa6427c33?w=500'}
+        src={formatMediaUrl(image_url) || 'https://images.unsplash.com/photo-1541944743827-e04aa6427c33?w=500'}
         alt={title}
         className="w-full h-48 object-cover"
       />

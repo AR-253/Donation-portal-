@@ -121,6 +121,22 @@ const AdminDonations = () => {
     toast.success('Donations successfully exported to CSV!');
   };
 
+  const handleDeleteDonation = async (donationId) => {
+    if (!window.confirm('WARNING: Are you sure you want to permanently delete this donation? This will subtract the donation amount from the campaign progress and delete the receipt.')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/admin/donations/${donationId}`);
+      toast.success('Donation successfully deleted from ledger.');
+      setSelectedDonation(null);
+      fetchDonations(); // Refresh ledger
+    } catch (err) {
+      console.error('Delete donation error:', err);
+      toast.error(err.response?.data?.message || 'Failed to delete donation.');
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -246,7 +262,12 @@ const AdminDonations = () => {
                       <td className="px-6 py-4">
                         <div>
                           <p className="font-bold text-gray-950">{donation.donor_name}</p>
-                          {donation.message && <p className="text-xs text-gray-400 italic max-w-xs truncate">"{donation.message}"</p>}
+                          {donation.stripe_payment_id && (
+                            <p className="text-[10px] text-emerald-800 font-bold bg-emerald-50 border border-emerald-100/50 px-1.5 py-0.5 rounded inline-block mt-1 font-mono">
+                              Ref: {donation.stripe_payment_id}
+                            </p>
+                          )}
+                          {donation.message && <p className="text-xs text-gray-400 italic max-w-xs truncate mt-1">"{donation.message}"</p>}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-gray-600 truncate max-w-xs">{donation.campaign_title}</td>
@@ -346,9 +367,9 @@ const AdminDonations = () => {
                       <span className="font-semibold text-gray-800">{selectedDonation.donor_email || 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Account/Source:</span>
-                      <span className="font-semibold text-gray-800 truncate max-w-[180px]" title={selectedDonation.stripe_payment_id || 'Direct Payment'}>
-                        {selectedDonation.stripe_payment_id ? `Stripe ID: ${selectedDonation.stripe_payment_id}` : 'Direct Portal Account'}
+                      <span className="text-gray-500">Transaction/Ref ID:</span>
+                      <span className="font-semibold text-emerald-700 font-mono" title={selectedDonation.stripe_payment_id}>
+                        {selectedDonation.stripe_payment_id || 'N/A'}
                       </span>
                     </div>
                   </div>
@@ -359,7 +380,7 @@ const AdminDonations = () => {
                   <div className="bg-gray-50 border border-gray-100 rounded-2xl p-3 space-y-1.5">
                     <div className="flex justify-between">
                       <span className="text-gray-500">Beneficiary:</span>
-                      <span className="font-semibold text-emerald-700 font-bold">GiveHope Organization</span>
+                      <span className="font-semibold text-emerald-700 font-bold">iBTIDAA Welfare Foundation</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Destination Account:</span>
@@ -382,15 +403,23 @@ const AdminDonations = () => {
               <div className="pt-2 flex gap-3">
                 <button
                   type="button"
-                  onClick={() => window.print()}
-                  className="flex-grow px-4 py-2.5 border border-emerald-600 hover:bg-emerald-50 text-emerald-600 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5"
+                  onClick={() => handleDeleteDonation(selectedDonation.id)}
+                  className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 font-bold rounded-xl text-xs transition shrink-0 cursor-pointer"
+                  title="Mark as Fake and Delete"
                 >
-                  <span>🖨️</span> Print Receipt
+                  🗑️ Delete
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="flex-grow px-4 py-2.5 border border-emerald-600 hover:bg-emerald-50 text-emerald-600 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <span>🖨️</span> Print
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedDonation(null)}
-                  className="flex-grow px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition"
+                  className="flex-grow px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition cursor-pointer"
                 >
                   Close
                 </button>

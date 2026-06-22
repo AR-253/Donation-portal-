@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '../../api/axios';
 import AdminLayout from '../../components/AdminLayout';
+import { formatMediaUrl } from '../../utils/media';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -25,10 +26,12 @@ const AdminManageStories = () => {
     title: '',
     description: '',
     image_url: '',
+    video_url: '',
   });
   
   const [formLoading, setFormLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
+  const [videoUploading, setVideoUploading] = useState(false);
 
   useEffect(() => {
     fetchStories();
@@ -85,7 +88,7 @@ const AdminManageStories = () => {
   // --- Modal Handlers ---
   const openCreateModal = () => {
     setEditingStory(null);
-    setFormData({ title: '', description: '', image_url: '' });
+    setFormData({ title: '', description: '', image_url: '', video_url: '' });
     setIsFormModalOpen(true);
   };
 
@@ -95,6 +98,7 @@ const AdminManageStories = () => {
       title: story.title,
       description: story.description,
       image_url: story.image_url,
+      video_url: story.video_url || '',
     });
     setIsFormModalOpen(true);
   };
@@ -127,6 +131,28 @@ const AdminManageStories = () => {
       toast.error(err.response?.data?.message || 'Failed to upload image.');
     } finally {
       setImageUploading(false);
+    }
+  };
+
+  const handleVideoFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setVideoUploading(true);
+    const uploadData = new FormData();
+    uploadData.append('image', file);
+
+    try {
+      const response = await api.post('/admin/upload', uploadData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setFormData((prev) => ({ ...prev, video_url: response.data.url }));
+      toast.success('Video uploaded successfully!');
+    } catch (err) {
+      console.error('Video upload error:', err);
+      toast.error(err.response?.data?.message || 'Failed to upload video.');
+    } finally {
+      setVideoUploading(false);
     }
   };
 
@@ -305,7 +331,7 @@ const AdminManageStories = () => {
                       <td className="px-5 py-3">
                         {story.image_url ? (
                           <img 
-                            src={story.image_url} 
+                            src={formatMediaUrl(story.image_url)} 
                             alt={story.title} 
                             className="w-14 h-10 object-cover rounded-lg border border-gray-100 shadow-2xs"
                           />
@@ -496,7 +522,45 @@ const AdminManageStories = () => {
                 {/* Image Preview */}
                 {formData.image_url && (
                   <div className="rounded-xl overflow-hidden border border-gray-100 shadow-xs">
-                    <img src={formData.image_url} alt="Preview" className="w-full h-40 object-cover" />
+                    <img src={formatMediaUrl(formData.image_url)} alt="Preview" className="w-full h-40 object-cover" />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Upload Video (Proof)</label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={handleVideoFileChange}
+                      className="text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 file:transition file:cursor-pointer flex-grow border border-gray-200 rounded-xl p-1 shadow-2xs bg-white"
+                    />
+                    {videoUploading && (
+                      <span className="text-xs font-bold text-emerald-600 animate-pulse shrink-0">Uploading...</span>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Or Direct Video / YouTube URL</label>
+                  <input
+                    type="text"
+                    name="video_url"
+                    value={formData.video_url}
+                    onChange={handleFormChange}
+                    placeholder="e.g. https://www.youtube.com/watch?v=xxxx"
+                    className="w-full px-4 py-2.5 border border-gray-200 focus:border-emerald-500 focus:outline-none rounded-xl text-sm font-medium shadow-2xs"
+                  />
+                </div>
+
+                {/* Video Preview */}
+                {formData.video_url && (
+                  <div className="rounded-xl overflow-hidden border border-gray-100 shadow-xs bg-black flex justify-center p-1">
+                    {formData.video_url.includes('youtube.com') || formData.video_url.includes('youtu.be') ? (
+                      <div className="text-white text-[11px] font-bold p-3 text-center">📺 YouTube video linked (will render as embed iframe)</div>
+                    ) : (
+                      <video src={formatMediaUrl(formData.video_url)} controls className="w-full max-h-40" />
+                    )}
                   </div>
                 )}
 
@@ -510,7 +574,7 @@ const AdminManageStories = () => {
                   </button>
                   <button
                     type="submit"
-                    disabled={formLoading || imageUploading}
+                    disabled={formLoading || imageUploading || videoUploading}
                     className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-bold text-xs rounded-xl transition cursor-pointer shadow-sm"
                   >
                     {formLoading ? 'Saving...' : editingStory ? 'Update Story' : 'Publish Story'}

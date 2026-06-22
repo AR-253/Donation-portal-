@@ -22,8 +22,23 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             {/* Logo */}
-            <Link to="/" className="flex-shrink-0 flex items-center gap-2">
-              <span className="text-2xl font-black tracking-tight text-emerald-600">GiveHope</span>
+            <Link to="/" className="flex-shrink-0 flex items-center gap-3">
+              <svg className="w-10 h-10 text-emerald-600" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Outer decorative ring */}
+                <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="2.5" strokeDasharray="6 3" />
+                {/* Crescent Moon shape */}
+                <path d="M72 50C72 61.6 63.6 71.1 52.8 72.8C59.6 70.8 64.6 64.6 64.6 57.2C64.6 48.1 56.4 40.8 46.2 40.8C42.8 40.8 39.6 41.7 36.8 43.2C40.6 34.6 49.6 28.8 60 28.8C72 28.8 72 38.4 72 50Z" fill="currentColor" opacity="0.15" />
+                {/* Stylized Dome/Minaret & Hands emblem */}
+                <path d="M50 22C46 32 40 38 32 44C38 48 45 49 50 62C55 49 62 48 68 44C60 38 54 32 50 22Z" fill="currentColor" />
+                <path d="M35 60C45 62 55 62 65 60C62 68 56 74 50 78C44 74 38 68 35 60Z" fill="#ca8a04" />
+                {/* Heart outline in center */}
+                <path d="M50 56C48.5 54 44 50 44 47C44 45 45.5 43.5 47.5 43.5C48.8 43.5 49.5 44.5 50 45C50.5 44.5 51.2 43.5 52.5 43.5C54.5 43.5 56 45 56 47C56 50 51.5 54 50 56Z" fill="white" />
+              </svg>
+              <div className="flex flex-col">
+                <span className="text-xl font-black tracking-tight text-emerald-600 leading-none">iBTIDAA</span>
+                <span className="text-[9px] font-bold text-gray-500 tracking-widest uppercase mt-0.5 leading-none">Welfare Foundation</span>
+                <span className="text-[7px] text-gold-600 font-extrabold tracking-wider uppercase mt-0.5 leading-none">Respecting Humanity</span>
+              </div>
             </Link>
 
             {/* Nav Links */}

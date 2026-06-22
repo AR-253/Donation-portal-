@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '../../api/axios';
 import AdminLayout from '../../components/AdminLayout';
+import { formatMediaUrl } from '../../utils/media';
 
 const AdminCampaigns = () => {
   const [campaigns, setCampaigns] = useState([]);
@@ -215,7 +216,7 @@ const AdminCampaigns = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <img
-                            src={campaign.image_url || 'https://images.unsplash.com/photo-1541944743827-e04aa6427c33?w=100'}
+                            src={formatMediaUrl(campaign.image_url) || 'https://images.unsplash.com/photo-1541944743827-e04aa6427c33?w=100'}
                             alt={campaign.title}
                             className="w-12 h-12 object-cover rounded-lg shrink-0 border border-gray-100"
                           />
@@ -351,7 +352,7 @@ const AdminCampaigns = () => {
                   <div className="flex gap-4 items-center">
                     {formData.image_url && (
                       <img
-                        src={formData.image_url}
+                        src={formatMediaUrl(formData.image_url)}
                         alt="Preview"
                         className="w-16 h-16 object-cover rounded-xl border border-gray-200"
                       />

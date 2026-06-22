@@ -4,6 +4,7 @@ import api from '../api/axios';
 import ProgressBar from '../components/ProgressBar';
 import DonationForm from '../components/DonationForm';
 import { AuthContext } from '../context/AuthContext';
+import { formatMediaUrl } from '../utils/media';
 
 const CampaignDetail = () => {
   const { id } = useParams();
@@ -63,7 +64,7 @@ const CampaignDetail = () => {
         {/* Left Side: Campaign Details */}
         <div className="lg:col-span-2 space-y-6">
           <img
-            src={campaign.image_url || 'https://images.unsplash.com/photo-1541944743827-e04aa6427c33?w=800'}
+            src={formatMediaUrl(campaign.image_url) || 'https://images.unsplash.com/photo-1541944743827-e04aa6427c33?w=800'}
             alt={campaign.title}
             className="w-full h-96 object-cover rounded-2xl shadow-sm border border-gray-100"
           />

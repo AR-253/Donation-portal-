@@ -103,7 +103,7 @@ exports.addComment = async (req, res) => {
 
 // POST /api/stories -> Create success story (Admin Only)
 exports.createStory = async (req, res) => {
-  const { title, description, image_url } = req.body;
+  const { title, description, image_url, video_url } = req.body;
 
   try {
     if (!title || !description) {
@@ -111,8 +111,8 @@ exports.createStory = async (req, res) => {
     }
 
     const [result] = await db.query(
-      'INSERT INTO success_stories (title, description, image_url) VALUES (?, ?, ?)',
-      [title.trim(), description.trim(), image_url || '']
+      'INSERT INTO success_stories (title, description, image_url, video_url) VALUES (?, ?, ?, ?)',
+      [title.trim(), description.trim(), image_url || '', video_url || '']
     );
 
     await logAudit(req, 'Success Stories', `Created success story: "${title}" (ID: ${result.insertId})`);
@@ -130,7 +130,7 @@ exports.createStory = async (req, res) => {
 // PUT /api/stories/:id -> Update success story (Admin Only)
 exports.updateStory = async (req, res) => {
   const { id } = req.params;
-  const { title, description, image_url } = req.body;
+  const { title, description, image_url, video_url } = req.body;
 
   try {
     if (!title || !description) {
@@ -143,8 +143,8 @@ exports.updateStory = async (req, res) => {
     }
 
     await db.query(
-      'UPDATE success_stories SET title = ?, description = ?, image_url = ? WHERE id = ?',
-      [title.trim(), description.trim(), image_url || '', id]
+      'UPDATE success_stories SET title = ?, description = ?, image_url = ?, video_url = ? WHERE id = ?',
+      [title.trim(), description.trim(), image_url || '', video_url || '', id]
     );
 
     await logAudit(req, 'Success Stories', `Updated success story: "${title}" (ID: ${id})`);

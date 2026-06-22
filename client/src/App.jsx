@@ -120,9 +120,9 @@ function App() {
                   </main>
                   <footer className="bg-white border-t border-gray-100 py-8 text-center text-sm text-gray-500">
                     <div className="max-w-7xl mx-auto px-4">
-                      <p className="font-semibold text-gray-900">GiveHope Donation Portal</p>
-                      <p className="mt-1 text-gray-400">Bringing hope and support to those who need it most.</p>
-                      <p className="mt-4 text-xs text-gray-300">&copy; {new Date().getFullYear()} GiveHope. All rights reserved.</p>
+                      <p className="font-bold text-emerald-600">iBTIDAA Welfare Foundation</p>
+                      <p className="mt-1 text-gray-400">Respecting Humanity — Bringing hope and support to those who need it most.</p>
+                      <p className="mt-4 text-xs text-gray-300">&copy; {new Date().getFullYear()} iBTIDAA Welfare Foundation. All rights reserved.</p>
                     </div>
                   </footer>
                 </>

@@ -2,6 +2,17 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
+import { formatMediaUrl } from '../utils/media';
+
+const getYouTubeEmbedUrl = (url) => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  if (match && match[2].length === 11) {
+    return `https://www.youtube.com/embed/${match[2]}`;
+  }
+  return null;
+};
 
 const SuccessStories = () => {
   const { user } = useContext(AuthContext);
@@ -12,6 +23,7 @@ const SuccessStories = () => {
     return saved ? JSON.parse(saved) : {};
   });
 
+  const [activeMediaTab, setActiveMediaTab] = useState({});
   const [commentInputs, setCommentInputs] = useState({});
   const [guestNames, setGuestNames] = useState({});
   const [submittingComment, setSubmittingComment] = useState({});
@@ -217,11 +229,11 @@ const SuccessStories = () => {
                 {/* Post Header */}
                 <div className="px-4 py-3 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-full flex items-center justify-center font-black text-xs shadow-sm ring-2 ring-emerald-100">
-                      GH
+                    <div className="w-9 h-9 bg-gradient-to-br from-emerald-600 to-emerald-800 text-white rounded-full flex items-center justify-center font-black text-xs shadow-sm ring-2 ring-emerald-100">
+                      IB
                     </div>
                     <div>
-                      <h4 className="font-bold text-gray-900 text-sm leading-tight">GiveHope</h4>
+                      <h4 className="font-bold text-gray-900 text-sm leading-tight">iBTIDAA Welfare Foundation</h4>
                       <p className="text-[11px] text-gray-400 font-medium leading-tight">{formatTimeAgo(story.created_at)}</p>
                     </div>
                   </div>
@@ -231,34 +243,99 @@ const SuccessStories = () => {
                   </div>
                 </div>
 
-                {/* Cover Image */}
-                {story.image_url && (
-                  <div
-                    className="relative w-full bg-gray-100 cursor-pointer overflow-hidden"
-                    onDoubleClick={() => handleDoubleClickLike(story.id)}
-                    onClick={() => setActiveImage(story.image_url)}
-                  >
-                    <img
-                      src={story.image_url}
-                      alt={story.title}
-                      className="w-full object-cover"
-                      style={{ maxHeight: '520px' }}
-                    />
-                    {/* Double-tap heart animation overlay */}
-                    {likeAnimations[story.id] && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <span
-                          className="text-white text-7xl drop-shadow-lg"
-                          style={{
-                            animation: 'heartPop 0.6s ease forwards',
-                          }}
-                        >
-                          ❤️
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
+                {/* Media Section */}
+                {(() => {
+                  const hasImage = !!story.image_url;
+                  const hasVideo = !!story.video_url;
+                  const youtubeUrl = hasVideo ? getYouTubeEmbedUrl(story.video_url) : null;
+                  const activeTab = activeMediaTab[story.id] || (hasVideo ? 'video' : 'image');
+
+                  if (!hasImage && !hasVideo) return null;
+
+                  return (
+                    <div className="relative w-full bg-gray-100 overflow-hidden border-b border-gray-100">
+                      {/* Tabs Bar (Only show if BOTH exist) */}
+                      {hasImage && hasVideo && (
+                        <div className="flex bg-gray-50 border-b border-gray-100 text-xs">
+                          <button
+                            type="button"
+                            onClick={() => setActiveMediaTab((prev) => ({ ...prev, [story.id]: 'video' }))}
+                            className={`flex-grow py-2.5 font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                              activeTab === 'video'
+                                ? 'bg-white text-emerald-800 border-b-2 border-emerald-600'
+                                : 'text-gray-400 hover:text-gray-600'
+                            }`}
+                          >
+                            🎥 Video Proof
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setActiveMediaTab((prev) => ({ ...prev, [story.id]: 'image' }))}
+                            className={`flex-grow py-2.5 font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                              activeTab === 'image'
+                                ? 'bg-white text-emerald-800 border-b-2 border-emerald-600'
+                                : 'text-gray-400 hover:text-gray-600'
+                            }`}
+                          >
+                            📷 Photo Proof
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Content Renderer */}
+                      {activeTab === 'video' && hasVideo ? (
+                        youtubeUrl ? (
+                          <div className="w-full aspect-video bg-black">
+                            <iframe
+                              src={youtubeUrl}
+                              title={story.title}
+                              className="w-full h-full border-0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            ></iframe>
+                          </div>
+                        ) : (
+                          <div className="w-full bg-black flex justify-center">
+                            <video
+                              src={formatMediaUrl(story.video_url)}
+                              controls
+                              preload="metadata"
+                              className="w-full max-h-[520px] object-contain"
+                            ></video>
+                          </div>
+                        )
+                      ) : (
+                        hasImage && (
+                          <div
+                            className="relative w-full cursor-pointer overflow-hidden"
+                            onDoubleClick={() => handleDoubleClickLike(story.id)}
+                            onClick={() => setActiveImage(formatMediaUrl(story.image_url))}
+                          >
+                            <img
+                              src={formatMediaUrl(story.image_url)}
+                              alt={story.title}
+                              className="w-full object-cover"
+                              style={{ maxHeight: '520px' }}
+                            />
+                            {/* Heart double-tap animation overlay */}
+                            {likeAnimations[story.id] && (
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <span
+                                  className="text-white text-7xl drop-shadow-lg"
+                                  style={{
+                                    animation: 'heartPop 0.6s ease forwards',
+                                  }}
+                                >
+                                  ❤️
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Action Bar */}
                 <div className="px-4 pt-3 pb-1 flex items-center justify-between">
